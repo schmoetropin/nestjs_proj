@@ -26,7 +26,7 @@ export class AuthService {
 
         const payload = { sub: checkUser.id, username: checkUser.email };
         const expire = (this.tokenExpTime ? this.tokenExpTime : 10000) * 6;
-        const token = this.jwtService.sign(payload, {expiresIn: `${expire}h`});
+        const token = this.jwtService.sign(payload, {expiresIn: `${expire}m`});
 
         return {
             token,
