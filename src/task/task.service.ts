@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { TaskDto } from './task.dto';
+import { TaskDto, TaskStatusEnum } from './task.dto';
 import type { FindAllTasksParameters } from './task.dto';
 
 @Injectable()
@@ -7,6 +7,9 @@ export class TaskService {
     private tasks: TaskDto[] = [];
 
     create(task: TaskDto): void {
+        task.id = this.tasks.length + 1;
+        task.status = TaskStatusEnum.TO_DO;
+
         this.tasks.push(task);
     }
 
@@ -44,8 +47,8 @@ export class TaskService {
         const date = new Date('2026-05-19');
 
         const data: TaskDto[] = [
-            {"id": 1, "title": "tit test", "description": "desc test", "status": "on", "expiration_date": date},
-            {"id": 2, "title": "tit test2", "description": "desc test", "status": "on", "expiration_date": date},
+            {"id": 1, "title": "tit test", "description": "desc test", "status": TaskStatusEnum.IN_PROGRESS, "expiration_date": date},
+            {"id": 2, "title": "tit test2", "description": "desc test", "status": TaskStatusEnum.DONE, "expiration_date": date},
         ];
 
         this.tasks = data;
