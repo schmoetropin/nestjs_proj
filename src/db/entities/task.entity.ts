@@ -16,4 +16,10 @@ export class TaskEntity {
 
     @Column({ type: 'timestamptz', name: 'expiration_date' })
     expiration_date!: Date;
+
+    @Column({ type: 'timestamptz' })
+    created_at?: Date;
+
+    @Column({ type: 'timestamptz' })
+    updated_at?: Date;
 }

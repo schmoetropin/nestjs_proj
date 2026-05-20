@@ -1,73 +1,66 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { TaskDto, TaskStatusEnum } from './task.dto';
 import type { FindAllTasksParameters } from './task.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TaskEntity } from 'src/db/entities/task.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TaskService {
     private tasks: TaskDto[] = [];
 
-    create(task: TaskDto): void {
-        task.id = this.tasks.length + 1;
-        task.status = TaskStatusEnum.TO_DO;
+    constructor(
+        @InjectRepository(TaskEntity)
+        private readonly taskRepository: Repository<TaskEntity>
+    ){}
 
-        this.tasks.push(task);
+    async create(task: TaskDto): Promise<void> {
+        const date = new Date().toISOString();
+        const data = {
+            title: task.title,
+            description: task.description,
+            expiration_date: task.expiration_date,
+            created_at: date,
+            updated_at: date,
+        }
+
+        await this.taskRepository.save(data);
     }
 
-    getMany(params: FindAllTasksParameters): TaskDto[] {
-        return this.tasks.filter(t => {
-            let match = true;
+    async getMany(params: FindAllTasksParameters): Promise<TaskDto[]> {
+        return await this.taskRepository.find();
+    }
 
-            if (params.title != undefined && t.title != params.title) {
-                match = false;
-            }
-
-            if (params.status != undefined && t.status != params.status) {
-                match = false;
-            }
-
-            return match;
+    async findById(id: number): Promise<TaskDto> {
+        const checkTask = await this.taskRepository.findOne({
+            where: { id }
         });
-    }
 
-    findById(id: number): TaskDto {
-        const checkTask = this.tasks.filter(t => t.id == id);
-
-        if (!checkTask.length) {
+        if (!checkTask) {
             throw new HttpException(`Id ${id} not found`, HttpStatus.NOT_FOUND);
         }
 
-        return this.tasks.filter((t: TaskDto) =>{
-            if (id != t.id)
-                return false;
-            return t;
-        })[0];
+        return checkTask;
     }
 
-    populate(): void {
-        const date = new Date('2026-05-19');
+    async update(task: TaskDto, id: number): Promise<void> {
+        const checkTask = await this.taskRepository.findOne({
+            where: { id }
+        });
 
-        const data: TaskDto[] = [
-            {"id": 1, "title": "tit test", "description": "desc test", "status": TaskStatusEnum.IN_PROGRESS, "expiration_date": date},
-            {"id": 2, "title": "tit test2", "description": "desc test", "status": TaskStatusEnum.DONE, "expiration_date": date},
-        ];
-
-        this.tasks = data;
-    }
-
-    update(task: TaskDto, id: number): void {
-        const checkTask = this.tasks.filter(t => t.id == id);
-
-        if (!checkTask.length) {
+        if (!checkTask) {
             throw new HttpException(`Id ${id} not found`, HttpStatus.NOT_FOUND);
         }
 
-        const date = new Date(task.expiration_date);
-        const taskIndex = this.tasks.findIndex(t => t.id == id);
-        this.tasks[taskIndex] = {
-            ...this.tasks[taskIndex],
-            ...task,
-            expiration_date: date,
+        const date = new Date().toISOString();
+        const data = {
+            updated_at: date,
+            title: task.title,
+            description: task.description,
+            status: task.status,
         };
+
+        await this.taskRepository.update(id, data);
     }
 
     delete(id: number): void {

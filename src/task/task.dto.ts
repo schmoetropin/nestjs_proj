@@ -19,6 +19,7 @@ export class TaskDto {
     @IsString()
     @MinLength(5)
     @MaxLength(512)
+    @IsOptional()
     description!: string;
 
     @IsEnum(TaskStatusEnum)
@@ -27,6 +28,14 @@ export class TaskDto {
 
     @IsDateString()
     expiration_date!: Date;
+
+    @IsOptional()
+    @IsDateString()
+    created_at?: Date;
+
+    @IsOptional()
+    @IsDateString()
+    updated_at?: Date;
 }
 
 export interface FindAllTasksParameters {
