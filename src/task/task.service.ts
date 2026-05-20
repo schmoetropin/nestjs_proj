@@ -63,14 +63,17 @@ export class TaskService {
         await this.taskRepository.update(id, data);
     }
 
-    delete(id: number): void {
-        const checkTask = this.tasks.filter(t => t.id == id);
+    async delete(id: number): Promise<void> {
+        const checkTask = await this.taskRepository.findOne({
+            where: { id }
+        });
 
-        if (!checkTask.length) {
+        if (!checkTask) {
             throw new HttpException(`Id ${id} not found`, HttpStatus.NOT_FOUND);
         }
 
-        const taskIndex = this.tasks.findIndex(t => t.id == id);
-        this.tasks.splice(taskIndex, 1);
+        if (checkTask.id) {
+            await this.taskRepository.delete(checkTask.id);
+        }
     }
 }
