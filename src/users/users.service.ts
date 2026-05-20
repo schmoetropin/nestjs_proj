@@ -1,31 +1,42 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserDto } from './users.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from 'src/db/entities/user.entity';
+import { Repository } from 'typeorm';
+import { hashSync } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-    private users: UserDto[] = [
-        {
-            id: 1,
-            name: "name1",
-            email: "g@g.c",
-            password: "123456",
-            created_at: new Date(),
-            updated_at: new Date(),
-        },
-        {
-            id: 2,
-            name: "name2",
-            email: "w@w.c",
-            password: "123456",
-            created_at: new Date(),
-            updated_at: new Date(),
-        },
-    ];
+    constructor(
+        @InjectRepository(UserEntity)
+        private readonly usersRepository: Repository<UserEntity>
+    ){}
 
-    findByEmail(email: string, throwResp: boolean = true): UserDto|null {
-        const checkEmail = this.users.filter(u => u.email == email);
+    async create (newUser: UserDto): Promise<void> {
+        const regUser = await this.findByEmail(newUser.email, false);
 
-        if (!checkEmail.length) {
+        if (regUser) {
+            throw new ConflictException(`User ${regUser.email} already registered`);
+        }
+
+        const date = new Date();
+        const data = {
+            name: newUser.name,
+            email: newUser.email,
+            password: hashSync(newUser.password, 10),
+            created_at: date,
+            updated_at: date,
+        };
+
+        const {id, email} = await this.usersRepository.save(data);
+    }
+
+    async findByEmail(email: string, throwResp: boolean = true): Promise<UserDto|null> {
+        const user: any = this.usersRepository.findOne({
+            where: { email }
+        });
+
+        if (!user) {
             if (throwResp) {
                 throw new HttpException('User not found', HttpStatus.NOT_FOUND);
             } else {
@@ -33,8 +44,11 @@ export class UsersService {
             }
         }
 
-        const userIndex = this.users.findIndex(u => u.email == email);
-
-        return this.users[userIndex];
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            password: user.password,
+        };
     }
 }

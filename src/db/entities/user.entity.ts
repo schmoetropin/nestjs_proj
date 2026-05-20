@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity({ name: 'users' })
 export class UserEntity {
     @PrimaryGeneratedColumn()
-    id?: number;
+    id!: number;
 
     @Column({ type: 'varchar' })
     name!: string;
@@ -12,11 +12,11 @@ export class UserEntity {
     email!: string;
 
     @Column({ type: 'varchar' })
-    password?: string;
+    password!: string;
 
     @Column({ type: 'timestamptz', name: 'created_at' })
-    createdAt!: Date;
+    createdAt?: Date;
 
     @Column({ type: 'timestamptz', name: 'updated_at' })
-    updatedAt!: Date;
+    updatedAt?: Date;
 }
