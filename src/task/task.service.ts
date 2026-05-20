@@ -3,7 +3,7 @@ import { TaskDto, TaskStatusEnum } from './task.dto';
 import type { FindAllTasksParameters } from './task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TaskEntity } from 'src/db/entities/task.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsUtils, Like, Repository } from 'typeorm';
 
 @Injectable()
 export class TaskService {
@@ -28,7 +28,23 @@ export class TaskService {
     }
 
     async getMany(params: FindAllTasksParameters): Promise<TaskDto[]> {
-        return await this.taskRepository.find();
+
+        let search = {};
+
+        if (params.status) {
+            search = {
+                status: Like(`%${params.status}%`) 
+            };
+        }
+
+        if (params.title) {
+            search = {
+                ...search,
+                title: Like(`%${params.title}%`) 
+            };
+        }
+
+        return await this.taskRepository.find({where: search});
     }
 
     async findById(id: number): Promise<TaskDto> {
