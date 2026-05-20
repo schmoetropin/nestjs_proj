@@ -19,20 +19,20 @@ export class UsersService {
             throw new ConflictException(`User ${regUser.email} already registered`);
         }
 
-        const date = new Date();
+        const date = new Date().toISOString();
         const data = {
             name: newUser.name,
             email: newUser.email,
             password: hashSync(newUser.password, 10),
-            created_at: date,
-            updated_at: date,
+            createdAt: date,
+            updatedAt: date,
         };
 
         const {id, email} = await this.usersRepository.save(data);
     }
 
     async findByEmail(email: string, throwResp: boolean = true): Promise<UserDto|null> {
-        const user: any = this.usersRepository.findOne({
+        const user: any = await this.usersRepository.findOne({
             where: { email }
         });
 
