@@ -17,8 +17,8 @@ export class AuthService {
         this.tokenExpTime = this.configService.get<number>('JWT_EXPIRATION_TIME');
     }
 
-    signIn(email: string, password: string): AuthResponseDto {
-        const checkUser = this.userService.findByEmail(email, false);
+    async signIn(email: string, password: string): Promise<AuthResponseDto> {
+        const checkUser = await this.userService.findByEmail(email, false);
 
         if (!checkUser/* || !compareSync(password, checkUser.password)*/) {
             throw new HttpException('User not found', HttpStatus.NOT_FOUND);
